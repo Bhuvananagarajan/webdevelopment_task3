@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Book Manager</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    input, button { margin: 5px; padding: 8px; }
+    li { margin: 10px 0; }
+    button { background-color: #007bff; color: white; border: none; border-radius: 4px; }
+    button:hover { background-color: #0056b3; cursor: pointer; }
+    .edit-form input { width: 200px; }
+  </style>
+</head>
+<body>
+  <h1>📖 Book Manager</h1>
+
+  <h3>Add a New Book</h3>
+  <input id="title" placeholder="Book Title" />
+  <input id="author" placeholder="Author Name" />
+  <button onclick="addBook()">Add Book</button>
+
+  <h3>Available Books</h3>
+  <ul id="book-list"></ul>
+
+  <script>
+    async function fetchBooks() {
+      const res = await fetch('/books');
+      const books = await res.json();
+      const list = document.getElementById('book-list');
+      list.innerHTML = '';
+      books.forEach(book => {
+        list.innerHTML += `<li id="book-${book.id}">
+          <span id="info-${book.id}"><strong>${book.title}</strong> by ${book.author}</span>
+          <button onclick="editBook(${book.id}, '${book.title}', '${book.author}')">Edit</button>
+          <button onclick="deleteBook(${book.id})">Delete</button>
+        </li>`;
+      });
+    }
+
+    async function addBook() {
+      const title = document.getElementById('title').value.trim();
+      const author = document.getElementById('author').value.trim();
+      if (!title || !author) {
+        alert("Please enter both title and author.");
+        return;
+      }
+
+      await fetch('/books', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, author })
+      });
+      document.getElementById('title').value = '';
+      document.getElementById('author').value = '';
+      fetchBooks();
+    }
+
+    async function deleteBook(id) {
+      await fetch(`/books/${id}`, { method: 'DELETE' });
+      fetchBooks();
+    }
+
+    function editBook(id, currentTitle, currentAuthor) {
+      const container = document.getElementById(`book-${id}`);
+      container.innerHTML = `
+        <div class="edit-form">
+          <input id="edit-title-${id}" value="${currentTitle}" />
+          <input id="edit-author-${id}" value="${currentAuthor}" />
+          <button onclick="updateBook(${id})">Save</button>
+          <button onclick="fetchBooks()">Cancel</button>
+        </div>`;
+    }
+
+    async function updateBook(id) {
+      const title = document.getElementById(`edit-title-${id}`).value.trim();
+      const author = document.getElementById(`edit-author-${id}`).value.trim();
+      if (!title || !author) {
+        alert("Both fields are required.");
+        return;
+      }
+
+      await fetch(`/books/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, author })
+      });
+      fetchBooks();
+    }
+
+    fetchBooks();
+  </script>
+</body>
+</html>
