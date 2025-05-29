@@ -4,8 +4,6 @@ This project is a Book Management REST API using Node.js and Express.js with ful
 
 This project is a Book Management REST API built using **Node.js** and **Express.js**, supporting full **CRUD operations** on an in-memory list of books. It also includes a simple **HTML + JavaScript frontend** to interact with the API.
 
----
-
 🚀 Features
 
 - 📚 View all books (GET `/books`)
